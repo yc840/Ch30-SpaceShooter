@@ -6,12 +6,17 @@ public class BoundsCheck : MonoBehaviour
 {
     [Header("Set in Inspector")]
     public float radius = 1f;
+    public bool keepOnScreen = true;
 
     [Header("Set Dynamically")]
+    public bool isOnScreen = true;
     public float camWidth;
     public float camHeight;
 
-    void Awake()
+    [HideInInspector]
+    public bool offRight, offLeft, offUp, offDown;
+
+    void Start()
     {
         camHeight = Camera.main.orthographicSize;
         camWidth = camHeight * Camera.main.aspect;
@@ -20,27 +25,39 @@ public class BoundsCheck : MonoBehaviour
     void LateUpdate()
     {
         Vector3 pos = transform.position;
-        
-        if(pos.x > camWidth - radius)
+        isOnScreen = true;
+        offRight = offLeft = offUp = offDown = false;
+
+        if (pos.x > camWidth - radius)
         {
             pos.x = camWidth - radius;
-        } 
+            offRight = true;
+        }
 
         if (pos.x < -camWidth + radius)
         {
             pos.x = -camWidth + radius;
+            offLeft = true;
         }
 
         if (pos.y > camHeight - radius)
         {
             pos.y = camHeight - radius;
+            offUp = true;
         }
         if (pos.y < -camHeight + radius)
         {
             pos.y = -camHeight + radius;
+            offDown = true;
         }
-
-        transform.position = pos;
+        isOnScreen = !(offRight || offLeft || offUp || offDown);
+        if (keepOnScreen && !isOnScreen)
+        {
+            transform.position = pos;
+            isOnScreen = true;
+            offRight = offLeft = offUp = offDown = false;
+        }
+    
     }
 
     void OnDrawGizmos()
